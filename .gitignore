@@ -15,6 +15,7 @@ docs/**/
 #-----------------------------
 *[\<\>\:\"\/\\\|\?\*]*
 main.css
+main.css.map
 *.codekit
 *.sass-cache
 tests/.grunt
