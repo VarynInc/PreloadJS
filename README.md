@@ -21,7 +21,7 @@ function handleFileComplete(event) {
 * Discuss, share projects, and interact with other users on [reddit](http://www.reddit.com/r/createjs/).
 * Ask technical questions on [Stack Overflow](http://stackoverflow.com/questions/tagged/preloadjs).
 * File verified bugs or formal feature requests using Issues on [GitHub](https://github.com/createjs/PreloadJS/issues).
-* Have a look at the included [examples](https://github.com/CreateJS/PreloadJS/tree/master/examples) and 
+* Have a look at the included [examples](https://github.com/CreateJS/PreloadJS/tree/master/examples) and
 [API documentation](http://createjs.com/docs/preloadjs/) for more in-depth information.
 
 Built by [gskinner.com](http://www.gskinner.com), and is released for free under the MIT license, which means you can
@@ -33,3 +33,9 @@ use it for almost any purpose (including commercial projects). We appreciate cre
 **LoadQueue**
 The main class that manages all preloading. Instantiate a LoadQueue instance, load a file or manifest, and track
 progress and complete events. Check out the [docs](http://createjs.com/docs/preloadjs/) for more information.
+
+## Build the library
+
+All source code is in the `./src` folder. After updating any source code, run the tests to verify your changes. See [`./tests/README.md`](./tests/README.md). If you add new code, please add a test case to validate your new code. In order to run the tests you need to run the `build next` process as the tests are run against the `preloadjs-NEXT.js` library.
+
+Do not edit the library files in `./lib` directly, these files are generated from the `./src` folder by the build process. To build this library, see [`./build/README.md`](./build/README.md).

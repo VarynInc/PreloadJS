@@ -7,11 +7,11 @@ Note that this requires a familiarity with using the command line. The example c
 ### Install dependencies
 
 sass (3.3 or greater is required):
-    
+
     # ruby is required for sass. Check http://sass-lang.com/install for dependencies.
     # Install (or update) sass
     gem install sass;
-    
+
 Node (0.10.x or greater is required):
 
 	# check the version via the command line
@@ -67,5 +67,5 @@ The same as the NEXT process, but will not minify the source code. All code form
 * grunt next - Build everything using the NEXT version.
 * grunt combine - Build a NEXT version, but leave comments and formatting intact.
 * grunt docs - Build only the docs
-* grunt exportScriptTags - Export valid <script /> tags from the config.json file.
+* grunt exportScriptTags - Export valid `<script />` tags from the config.json file.
 * grunt nextlib - Export NEXT versions of the lib.
