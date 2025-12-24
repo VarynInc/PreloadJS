@@ -24,9 +24,6 @@ module.exports = function (grunt) {
 							global_defs: {
 								"DEBUG": false
 							}
-						},
-						mangle: {
-							except: getExclusions()
 						}
 					},
 					build: {
@@ -147,8 +144,7 @@ module.exports = function (grunt) {
 				sass: {
 					docs: {
 						options: {
-							style: 'compressed',
-							sourcemap:"none"
+							style: 'compressed'
 						},
 						files: {
 							'createjsTheme/assets/css/main.css': 'createjsTheme/assets/scss/main.scss'

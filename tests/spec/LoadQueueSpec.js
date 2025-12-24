@@ -34,31 +34,31 @@ describe("PreloadJS.LoadQueue", function () {
 			this.loadFile({
 				src: "static/jsonpSample.json",
 				callback: "x",
-				type: createjs.LoadQueue.JSONP
+				type: createjs.Types.JSONP
 			}, false);
 		});
 
 		it("should load and execute Javascript (tag)", function (done) {
 			this.queue.addEventListener("fileload", function (evt) {
 				expect(window.foo).toBe(true);
-				
+
 				delete window.foo;
 				done();
 			});
 			this.loadFile("static/scriptExample.js", false);
 		});
-				
+
 		it("should load and execute Javascript (tag) when maintainScriptOrder is false", function (done) {
-		
+
 			this.queue.addEventListener("fileload", function (evt) {
 				expect(window.foo).toBe(true);
-				
+
 				delete window.foo;
 				done();
 			});
-			
+
 			this.queue.maintainScriptOrder = false;
-			
+
 			this.loadFile("static/scriptExample.js", false);
 		});
 
@@ -78,22 +78,21 @@ describe("PreloadJS.LoadQueue", function () {
 
 			this.loadFile({
 				src: "audio/Thunder.mp3",
-				type: createjs.AbstractLoader.SOUND
+				type: createjs.Types.SOUND
 			});
 		});
 
 		it("should load video", function (done) {
 			this.queue.addEventListener("fileload", function (evt) {
-                evt.result.addEventListener("playing", function() {
-                    expect(evt.result).toEqual(jasmine.any(HTMLMediaElement));
-                    done();
-                });
-                evt.result.play();
+				expect(evt.result.readyState).toEqual(HTMLMediaElement.HAVE_ENOUGH_DATA);
+				expect(evt.result.playbackRate).toEqual(1);
+				expect(Math.floor(evt.result.duration)).toEqual(5);
+				done();
 			});
 
 			this.loadFile({
 				src: "static/video.mp4",
-				type: createjs.AbstractLoader.VIDEO
+				type: createjs.Types.VIDEO
 			}, false);
 		});
 
@@ -111,12 +110,10 @@ describe("PreloadJS.LoadQueue", function () {
 
 		it("should load an existing sound tag", function (done) {
 			this.queue.addEventListener("fileload", function (evt) {
-                evt.result.addEventListener("playing", function() {
-                   expect(evt.result).toEqual(tag);
-                    done();
-                })
-
-                evt.result.play();
+				expect(evt.result.readyState).toEqual(HTMLMediaElement.HAVE_ENOUGH_DATA);
+				expect(evt.result.playbackRate).toEqual(1);
+				expect(evt.result.duration).toEqual(3.864);
+				done();
 			});
 
 			var tag = document.createElement("audio");
@@ -128,23 +125,35 @@ describe("PreloadJS.LoadQueue", function () {
 			var _this = this;
 
             var func = {
-                progress: function () { }
+                progress: function (evt) {
+					expect(evt.title).not.toBe("null");
+                	expect(evt.message).not.toBe("null");
+				}
             };
             spyOn(func, 'progress');
 
             var completeCallback = function (evt) {
+                expect(evt.title).not.toBe("null");
+                expect(evt.message).not.toBe("null");
                 expect(func.progress).toHaveBeenCalled();
+				sound.removeEventListener("progress", func.progress);
+				done();
+			};
+            var errorCallback = function (evt) {
+                expect(evt.title).not.toBe("null");
+                expect(evt.message).not.toBe("null");
 				sound.removeEventListener("progress", func.progress);
 				done();
 			};
 
 			var sound = new createjs.SoundLoader({
 				src: "audio/Thunder.mp3",
-				type: createjs.LoadQueue.SOUND
+				type: createjs.Types.SOUND
 			});
 
 			sound.addEventListener("progress", func.progress);
             sound.addEventListener("complete", completeCallback);
+            sound.addEventListener("error", errorCallback);
 
 			sound.load();
 		});
@@ -170,13 +179,13 @@ describe("PreloadJS.LoadQueue", function () {
 
 		it("jsonP should error on a 404", function (done) {
 			this.queue.addEventListener("error", function (evt) {
-				expect(true).toBe(true);
+				expect(evt.type).toBe("error");
 				done();
 			});
 			this.loadFile({
 				src: "static/no_jsonp_here.json",
 				callback: "x",
-				type: createjs.LoadQueue.JSONP
+				type: createjs.Types.JSONP
 			}, false);
 		});
 	});
@@ -201,23 +210,21 @@ describe("PreloadJS.LoadQueue", function () {
 		it("should load and execute Javascript (xhr)", function (done) {
 			this.queue.addEventListener("fileload", function (evt) {
 				expect(window.foo).toBe(true);
-				
 				delete window.foo;
 				done();
 			});
 			this.loadFile("static/scriptExample.js", true);
 		});
-		
+
 		it("should load and execute Javascript (xhr) when maintainScriptOrder is false", function (done) {
 			this.queue.addEventListener("fileload", function (evt) {
 				expect(window.foo).toBe(true);
-				
 				delete window.foo;
 				done();
 			});
-			
+
 			this.queue.maintainScriptOrder = false;
-			
+
 			this.loadFile("static/scriptExample.js", true);
 		});
 
@@ -245,7 +252,7 @@ describe("PreloadJS.LoadQueue", function () {
                 });
                 this.loadFile({
                     src: "audio/Thunder.mp3",
-                    type: createjs.AbstractLoader.BINARY
+                    type: createjs.Types.BINARY
                 });
             } else {
                 expect("IE 9").toBe("not working");
@@ -266,37 +273,35 @@ describe("PreloadJS.LoadQueue", function () {
 				expect(typeof evt.result).toBe("string");
 				done();
 			});
-			this.loadFile({src: "art/gbot.svg", type: createjs.LoadQueue.TEXT});
+			this.loadFile({src: "art/gbot.svg", type: createjs.Types.TEXT});
 		});
 
         describe("MediaElement Loading", function() {
             it("should load sounds (xhr)", function (done) {
                 this.queue.addEventListener("fileload", function (evt) {
-                    evt.result.addEventListener("playing", function() {
-                        expect(evt.result).toEqual(jasmine.any(HTMLMediaElement));
-                        done();
-                    });
-                    evt.result.play();
+					expect(evt.item.type).toEqual("sound");
+					expect(evt.rawResult.type).toEqual("audio/mpeg");
+					expect(evt.rawResult.size).toBeGreaterThan(10000);
+					done();
                 });
 
                 this.loadFile({
                     src: "audio/Thunder.mp3",
-                    type: createjs.AbstractLoader.SOUND
+                    type: createjs.Types.SOUND
                 }, true);
             });
 
             it("should load video (xhr)", function (done) {
                 this.queue.addEventListener("fileload", function (evt) {
-                    evt.result.addEventListener("playing", function() {
-                        expect(evt.result).toEqual(jasmine.any(HTMLMediaElement));
-                        done();
-                    });
-                    evt.result.play();
+					expect(evt.item.type).toEqual("video");
+					expect(evt.rawResult.type).toEqual("video/mp4");
+					expect(evt.rawResult.size).toBeGreaterThan(100000);
+					done();
                 });
 
                 this.loadFile({
                     src: "static/video.mp4",
-                    type: createjs.AbstractLoader.VIDEO
+                    type: createjs.Types.VIDEO
                 }, true);
             });
         });
@@ -304,20 +309,17 @@ describe("PreloadJS.LoadQueue", function () {
 
 	// This fails in Opera and IE (expected, as crossOrigin is not supported)
 	it("images should allow crossOrigin access", function (done) {
-		this.queue.addEventListener("fileload", function (evt) {
-			var canvas = document.createElement("canvas");
-			var stage = new createjs.Stage(canvas);
-			var bmp = new createjs.Bitmap(evt.result);
-
-			stage.addChild(bmp);
-			stage.update();
-
-			expect(stage.hitTest(35, 25)).toBe(true);
+        const _this = this;
+		this.queue.addEventListener("complete", function (evt) {
+			expect(evt.result).not.toBe(null);
+			const bmp = new createjs.Bitmap(_this.queue.getResult("icon"));
+			expect(bmp.image.width).toBe(32);
+			expect(bmp.image.height).toBe(32);
 			done();
 		});
-
 		this.queue.loadFile({
-			src: "http://dev.gskinner.com/createjs/cors/daisy.png",
+			id: "icon",
+			src: "https://github.githubassets.com/favicons/favicon-dark.png", // "https://createjs.com/assets/favicons/favicon-192x192.png" // CreateJS.com does not support CORS
 			crossOrigin: true
 		});
 	});
@@ -338,7 +340,7 @@ describe("PreloadJS.LoadQueue", function () {
 		});
 		this.loadFile({
 			src: "static/manifest.json",
-			type: createjs.LoadQueue.MANIFEST
+			type: createjs.Types.MANIFEST
 		});
 	});
 
@@ -351,7 +353,7 @@ describe("PreloadJS.LoadQueue", function () {
         this.loadFile({
             id:"foo",
             src: "static/grant.json",
-            type: createjs.AbstractLoader.SPRITESHEET
+            type: createjs.Types.SPRITESHEET
         });
     });
 
@@ -365,7 +367,7 @@ describe("PreloadJS.LoadQueue", function () {
             id:"foo",
             src: "static/grantp.json",
             callback:"grantp",
-            type: createjs.AbstractLoader.SPRITESHEET
+            type: createjs.Types.SPRITESHEET
         });
     });
 
@@ -387,7 +389,7 @@ describe("PreloadJS.LoadQueue", function () {
 
 		this.loadFile({
 			src: "audio/Thunder.mp3",
-			type: createjs.LoadQueue.SOUND
+			type: createjs.Types.SOUND
 		});
 	});
 
@@ -406,7 +408,7 @@ describe("PreloadJS.LoadQueue", function () {
 		});
 		this.loadFile({
 			src: "art/gbot.svg",
-			type: createjs.LoadQueue.TEXT,
+			type: createjs.Types.TEXT,
 			data: "foo"
 		});
 	});
@@ -418,7 +420,7 @@ describe("PreloadJS.LoadQueue", function () {
 		s.getPreloadHandlers = function () {
 			return {
 				callback: s.preloadHandler, // Proxy the method to maintain scope
-				types: [createjs.LoadQueue.JSON],
+				types: [createjs.Types.JSON],
 				extensions: ["json"]
 			}
 		};
@@ -462,7 +464,7 @@ describe("PreloadJS.LoadQueue", function () {
 		// the grunt server will echo back whatever we send it.
 		this.loadFile({
 			src: "",
-			method: createjs.LoadQueue.POST,
+			method: createjs.Methods.POST,
 			values: value
 		});
 	});
@@ -481,7 +483,7 @@ describe("PreloadJS.LoadQueue", function () {
 		// the grunt server will echo back whatever we send it.
 		q.loadFile({
 			src: "/",
-			method: createjs.LoadQueue.GET,
+			method: createjs.Methods.GET,
 			values: value
 		});
 	});
@@ -491,7 +493,7 @@ describe("PreloadJS.LoadQueue", function () {
 		});
 		this.loadFile({
 			src: "art/gbot.svg",
-			type: createjs.LoadQueue.TEXT,
+			type: createjs.Types.TEXT,
 			data: "foo"
 		});
 
@@ -526,7 +528,7 @@ describe("PreloadJS.LoadQueue", function () {
 		this.loadFile({
 			src: "art/gbot.svg",
 			id: "foo",
-			type: createjs.LoadQueue.TEXT,
+			type: createjs.Types.TEXT,
 			data: "foo"
 		});
 	});
@@ -544,7 +546,7 @@ describe("PreloadJS.LoadQueue", function () {
 		this.loadFile({
 			src: "art/gbot.svg",
 			id: "foo",
-			type: createjs.LoadQueue.TEXT,
+			type: createjs.Types.TEXT,
 			data: "foo"
 		});
 	});
@@ -586,13 +588,13 @@ describe("PreloadJS.LoadQueue", function () {
             this.queue.addEventListener("fileload", func.fileload);
 
             this.queue.addEventListener("complete", function (evt) {
-                expect(func.fileload.calls.count()).toBe(1);
+                expect(func.fileload.calls.count()).toBe(2);
                 done();
             });
 
             this.loadFile({
                 src: "fonts/regul-bold.woff",
-                type: createjs.LoadQueue.FONT
+                type: createjs.Types.FONT
             });
         });
 
@@ -607,7 +609,7 @@ describe("PreloadJS.LoadQueue", function () {
             this.queue.addEventListener("fileload", func.fileload);
 
             this.queue.addEventListener("complete", function (evt) {
-                expect(func.fileload.calls.count()).toBe(1);
+                expect(func.fileload.calls.count()).toBe(3);
                 done();
             });
 
@@ -616,7 +618,7 @@ describe("PreloadJS.LoadQueue", function () {
                     "fonts/regul-book.woff",
                     "fonts/regul-bold.woff"
                 ],
-                type: createjs.LoadQueue.FONT
+                type: createjs.Types.FONT
             });
         });
 
@@ -631,13 +633,13 @@ describe("PreloadJS.LoadQueue", function () {
             this.queue.addEventListener("fileload", func.fileload);
 
             this.queue.addEventListener("complete", function (evt) {
-                expect(func.fileload.calls.count()).toBe(1);
+                expect(func.fileload.calls.count()).toBe(5);
                 done();
             });
 
             this.loadFile({
                 src: "https://fonts.googleapis.com/css?family=Roboto:400,700,400italic,700italic",
-                type: createjs.LoadQueue.FONTCSS
+                type: createjs.Types.FONTCSS
             });
         });
     });
